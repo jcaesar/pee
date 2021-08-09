@@ -1,0 +1,8 @@
+[package]
+name = "pee"
+version = "0.1.0"
+edition = "2018"
+
+[[bin]]
+name = "pee"
+path = "main.rs"

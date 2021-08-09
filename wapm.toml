@@ -1,0 +1,20 @@
+[package]
+name = "liftm/pee"
+version = "0.1.0"
+description = "Put bytes into a file"
+license = "Apache-2.0"
+repository = "https://github.com/jcaesar/wapm-pkg"
+homepage = "https://github.com/jcaesar/pee"
+readme = "README.md"
+
+[[module]]
+name = "pee"
+source = "pee.wasm"
+abi = "wasi"
+
+[module.interfaces]
+wasi = "0.1.0-unstable"
+
+[[command]]
+name = "pee"
+module = "pee"
