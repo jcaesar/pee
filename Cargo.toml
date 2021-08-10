@@ -2,8 +2,13 @@ cargo-features = ["strip"]
 
 [package]
 name = "pee"
-version = "0.1.0"
+version = "0.1.1"
+authors = ["Julius Michaelis <gitter@liftm.de>"]
 edition = "2018"
+description = "Put bytes into a file"
+license = "Apache-2.0"
+readme = "README.md"
+categories = ["command-line-utilities"]
 
 [[bin]]
 name = "pee"
