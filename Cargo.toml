@@ -1,3 +1,5 @@
+cargo-features = ["strip"]
+
 [package]
 name = "pee"
 version = "0.1.0"
@@ -9,3 +11,10 @@ path = "main.rs"
 
 [dev-dependencies]
 tempfile = "3.2.0"
+
+[profile.release]
+strip = true
+opt-level = 'z'
+lto = 'fat'
+codegen-units = 1
+#panic = 'abort' # build-std won't like it
