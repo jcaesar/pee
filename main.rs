@@ -1,7 +1,10 @@
 use std::collections::VecDeque;
+use std::ffi::OsString;
 
 fn main() {
-    let mut argv = std::env::args_os().collect::<VecDeque<_>>();
+    mein(std::env::args_os().collect::<VecDeque<_>>())
+}
+fn mein(mut argv: VecDeque<OsString>) {
     let pee = &argv.pop_front().expect("argv length is 0");
     let help = || -> ! {
         let pee = pee.to_str().unwrap_or("pee".into());
@@ -70,7 +73,56 @@ fn main() {
         .write(true)
         .create(true)
         .append(append)
+        .truncate(!append)
         .open(&file)
         .expect(&format!("Could not open {:?} for writing", file));
     std::io::Write::write_all(file, &content).expect("Couldn't write to FILE");
+}
+
+#[cfg(test)]
+mod test {
+    use std::collections::VecDeque;
+    use std::fs::read_to_string;
+    use tempfile::{tempdir, TempDir};
+
+    fn mein(argv: Vec<&str>) {
+        super::mein(argv.into_iter().map(|x| x.into()).collect::<VecDeque<_>>());
+    }
+
+    fn tempf(s: &str) -> (TempDir, String) {
+        let d = tempdir().unwrap();
+        let p = d.path().join(s);
+        (d, p.to_str().unwrap().into())
+    }
+
+    #[test]
+    fn plain() {
+        let (_d, f) = tempf("f");
+        mein(vec!["selfy", &f, "asdf"]);
+        assert_eq!(read_to_string(f).unwrap(), "asdf\n");
+    }
+
+    #[test]
+    fn over() {
+        let (_d, f) = tempf("f");
+        mein(vec!["selfy", &f, "asdffff"]);
+        mein(vec!["selfy", &f, "asd"]);
+        assert_eq!(read_to_string(f).unwrap(), "asd\n");
+    }
+
+    #[test]
+    fn append() {
+        let (_d, f) = tempf("f");
+        mein(vec!["selfy", "-a", &f, "asdffff"]);
+        mein(vec!["selfy", &f, "asd"]);
+        mein(vec!["selfy", "-a", &f, "bsd"]);
+        assert_eq!(read_to_string(f).unwrap(), "asd\nbsd\n");
+    }
+
+    #[test]
+    fn dashname() {
+        let (_d, f) = tempf("-f");
+        mein(vec!["selfy", "--", &f, "asdf"]);
+        assert_eq!(read_to_string(f).unwrap(), "asdf\n");
+    }
 }

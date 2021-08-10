@@ -6,3 +6,6 @@ edition = "2018"
 [[bin]]
 name = "pee"
 path = "main.rs"
+
+[dev-dependencies]
+tempfile = "3.2.0"
