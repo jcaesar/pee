@@ -35,13 +35,14 @@ fi
 
 root="$(realpath "$(dirname "$0")")"
 
-mkdir -p "$root/emk-target" "$root/emk-cache"
+mkdir -p "$root/emk-target" "$root/emk-cache" "$root/.cargo"
 
 #set -x
 podman run --rm -ti \
 	-w "/root/src/pee" \
 	-v "$root:/root/src/pee:ro" \
 	-v "$root/emk-target:/root/src/pee/target" \
+	-v "$root/emk-cargo:/root/src/pee/.cargo:ro" \
 	-v "$root/emk-cache:/root/.cargo/registry" \
 	$tag cargo +nightly build -Z build-std --release --locked --target=x86_64-unknown-linux-musl
 

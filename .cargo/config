@@ -1,7 +1,0 @@
-[build]
-# Work-around for https://github.com/japaric/xargo/issues/292:
-#rustflags = ["-Cembed-bitcode=yes"]
-
-[target.x86_64-unknown-linux-musl]
-# Path to Musl libc.a (plus bitcode work-around)
-rustflags = ["-L/usr/lib/x86_64-linux-musl", "-Cembed-bitcode=yes"]

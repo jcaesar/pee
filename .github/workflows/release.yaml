@@ -1,0 +1,56 @@
+---
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  mss:
+    name: Compressed Linux Static
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+          target: ${{ matrix.target }}
+          components: rust-src
+      - name: Configure link path
+        run: |
+          mkdir -p .cargo
+          echo '[target.x86_64-unknown-linux-musl]' >.cargo/config
+          echo 'rustflags = ["-L/usr/local/x86_64-linux-musl/lib"]' >>.cargo/config
+      - uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          args: -Z build-std --release --target=x86_64-unknown-linux-musl
+          command: build
+      - name: UPX
+        uses: svenstaro/upx-action@v2
+        with:
+          file: target/x86_64-unknown-linux-musl/release/pee
+      - name: Rename result
+        run: |
+          cp -l target/x86_64-unknown-linux-musl/release/pee pee-x86_64-linux-static
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: linux-static
+          path: pee-x86_64-linux-static
+
+  release:
+    name: "Tagged Release"
+    runs-on: "ubuntu-latest"
+    needs: mss
+    steps:
+      - uses: actions/download-artifact@v2
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          draft: true
+          files: linux-static/pee-x86_64-linux-static
