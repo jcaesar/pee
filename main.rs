@@ -67,7 +67,14 @@ fn mein(mut argv: VecDeque<OsString>) {
             content.push(10);
         }
         #[cfg(not(any(unix, target_os = "wasi")))]
-        {}
+        {
+            let argv = argv
+                .into_iter()
+                .map(|s| s.into_string())
+                .collect::<Result<Vec<_>, _>>()
+                .expect("UTF-8 arguments");
+            content = (argv.join(" ") + "\n").into_bytes();
+        }
     }
     let file = &mut std::fs::OpenOptions::new()
         .write(true)
