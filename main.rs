@@ -13,12 +13,12 @@ fn mein(mut argv: VecDeque<OsString>) {
                 "pee - put something into a file: like tee, without the stdout.\n",
                 "\n",
                 "Usage: {} [-ah-] {{FILE}} {{CONTENT}}...\n",
-                " -a         Append instead of overwrite\n",
-                " --         Overwrite instead of append\n",
-                "            default, only necessary if FILE starts with a -\n",
-                " -h         Print this help\n",
-                " FILE       Write to this path\n",
-                " CONTENT    Write all remaining arguments - will read stdin if empty\n"
+                "  -a         Append instead of overwrite\n",
+                "  --         Overwrite instead of append\n",
+                "             default, only necessary if FILE starts with a -\n",
+                "  -h         Print this help\n",
+                "  FILE       Write to this path\n",
+                "  CONTENT    Write all remaining arguments - will read stdin if empty\n"
             ),
             pee
         );
@@ -41,7 +41,7 @@ fn mein(mut argv: VecDeque<OsString>) {
         _ => {
             append = false;
             let tsl = front.to_string_lossy();
-            if &tsl[0..1] == "-" {
+            if tsl.chars().next() == Some('-') {
                 eprintln!("Unknown argument {}, try -h.", tsl);
                 std::process::exit(-1);
             } else {
@@ -51,10 +51,10 @@ fn mein(mut argv: VecDeque<OsString>) {
     };
     let file = file.unwrap_or_else(|| argv.pop_front().unwrap_or_else(|| help()));
 
-    let mut content;
-    if argv.is_empty() {
-        content = vec![];
+    let content = if argv.is_empty() {
+        let mut content = vec![];
         std::io::Read::read_to_end(&mut std::io::stdin(), &mut content).ok();
+        content
     } else {
         #[cfg(any(unix, target_os = "wasi"))]
         {
@@ -63,8 +63,9 @@ fn mein(mut argv: VecDeque<OsString>) {
             #[cfg(target_os = "wasi")]
             use std::os::wasi::ffi::OsStringExt;
             let argv = argv.into_iter().map(|s| s.into_vec()).collect::<Vec<_>>();
-            content = argv.join(&32);
+            let mut content = argv.join(&32);
             content.push(10);
+            content
         }
         #[cfg(not(any(unix, target_os = "wasi")))]
         {
@@ -73,9 +74,9 @@ fn mein(mut argv: VecDeque<OsString>) {
                 .map(|s| s.into_string())
                 .collect::<Result<Vec<_>, _>>()
                 .expect("UTF-8 arguments");
-            content = (argv.join(" ") + "\n").into_bytes();
+            (argv.join(" ") + "\n").into_bytes()
         }
-    }
+    };
     let file = &mut std::fs::OpenOptions::new()
         .write(true)
         .create(true)
