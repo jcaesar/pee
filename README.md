@@ -14,6 +14,6 @@ sudo bash -c 'echo 42 >/proc/sys/...'
 Example:
 ```bash
 echo please sit down when you | sudo pee /dev/kmsg
-sudo pee /dev/kmesg convenience arguments
+sudo pee /dev/kmsg '<5>'Pee: from arguments, with proper tag
 sudo dmesg -T | tail
 ```
